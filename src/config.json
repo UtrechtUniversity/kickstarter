@@ -1,0 +1,6 @@
+{
+    "input_filename": "../../kickstarter_experiments/data/csv_files/data_test_2023_07.csv",
+    "output_dir": "../data/processed",
+    "columns_business_description": ["title", "description", "category", "subcategory"],
+    "chunk_size": 10
+}
