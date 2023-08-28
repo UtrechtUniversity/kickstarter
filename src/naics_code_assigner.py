@@ -148,7 +148,7 @@ class NAICSCodeAssigner:
             chunk.to_csv(self.output_filename, mode='a', \
                          header=write_header, sep = '\t', index=False)
 
-            # Make backup copy of output file before appending to it
+            # Make backup copy of output file after appending to it
             shutil.copy(self.output_filename, \
                         self.output_filename.rsplit('.', 1)[0] \
                         + '_backup2.' + self.output_filename.rsplit('.',1)[1])
