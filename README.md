@@ -22,14 +22,18 @@ We started with already-scraped [data about Kickstarter projects](https://webrob
 ### Usage
 
 - **Create input data file**: Read the raw data (which is in JSON format) into an input CSV file containing,  at a minimum, the project id and the fields you want to use as your input to ChatGPT. Here the fields `name`, `blurb`, `category` and `subcategory` have been used.
+
 - **Obtain OpenAI API key**: Set the OpenAI key as an environment variable. 
- -- On Linux, type on in the terminal:
-	`export OPENAI_API_KEY=<your openai api key>`
- -- On Windows, type in the command prompt:
- `setx OPENAI_API_KEY <your openai api key>`
+  - On Linux, type on in the terminal:
+ 
+   `export OPENAI_API_KEY=<your openai api key>`
+  - On Windows, type in the command prompt:
+  
+   `setx OPENAI_API_KEY <your openai api key>`
 - **Create configuration file**: Specify user-defined variables in the `config.json` file.
 - **Run program**: Run the program from the terminal:
-	`python src/naics_code_assigner.py`
+
+  `python src/naics_code_assigner.py`
 
 ### Input
 The input is a CSV file with information about Kickstarter projects. Here is an example with a few rows and the relevant columns shown:
