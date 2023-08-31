@@ -8,6 +8,7 @@ import shutil
 from pathlib import Path
 import pandas as pd
 import openai
+from utilities import retry
 
 class NAICSCodeAssigner:
 
@@ -197,7 +198,7 @@ class NAICSCodeAssigner:
                 naics_code = None
                 prompt_tokens = None
                 completion_tokens = None
-                
+
             naics_codes.append(naics_code)
             num_prompt_tokens.append(prompt_tokens)
             num_completion_tokens.append(completion_tokens)
@@ -295,40 +296,10 @@ class NAICSCodeAssigner:
             the columns of columns_business_description.
 
         '''
-       
+
         description = '. '.join(row[columns_business_description])
-       
+
         return description
-
-def retry(function, max_retries, min_wait_time, *args):
-    
-    '''
-    Parameters
-    ----------
-    function: Function to run again
-    max_retries: Maximum number of times to retry
-    args: Arguments of the function
-
-    Returns
-    -------
-    Value returned by function, or prints an error message
-    '''
-
-    # Want to catch all kinds of exceptions
-    # pylint: disable=broad-except
-
-    num_attempt = 0
-    while num_attempt < max_retries:
-
-        try:
-            return function(*args)
-        except Exception as error:
-            print(f'Function {function} failed at attempt {num_attempt} \
-            with exception {repr(error)}')
-            time.sleep(random_wait_time(min_wait=min_wait_time))
-            num_attempt = num_attempt + 1
-
-    return None
 
 def main():
 
