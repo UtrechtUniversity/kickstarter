@@ -32,7 +32,7 @@ We started with already-scraped [data about Kickstarter projects](https://webrob
 	`python src/naics_code_assigner.py`
 
 ### Input
-The input is a CSV file with information about Kickstarter projects. Here is an example with the relevant columns shown:
+The input is a CSV file with information about Kickstarter projects. Here is an example with a few rows and the relevant columns shown:
 
 | name | blurb | category | subcategory|                                                                                                            
 |--|--|--|--
@@ -45,7 +45,7 @@ Graphic design tools for award-winning designs              | Professional graph
 
 ### Output
 
-The output is a CSV file which is the input file with additional columns containing the NAICS codes as well as the input and output tokens. Here is the output corresponding to the example input above:
+The output is a CSV file which is the input file with additional columns containing the NAICS codes as well as the number of input tokens used and the output tokens produced by ChatGPT. Here is the output corresponding to the example input above:
 <div  style="font-size: 4px;">
 
 | name | blurb | category | subcategory |  naics code | input tokens | output tokens                                                                                                          
