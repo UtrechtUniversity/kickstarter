@@ -24,7 +24,7 @@ We started with already-scraped [data about Kickstarter projects](https://webrob
 - **Create input data file**: Read the raw data (which is in JSON format) into an input CSV file containing,  at a minimum, the project id and the fields you want to use as your input to ChatGPT. Here the fields `name`, `blurb`, `category` and `subcategory` have been used.
 
 - **Obtain OpenAI API key**: Set the OpenAI key as an environment variable. 
-  - On Linux, type on in the terminal:
+  - On Linux, type in the terminal:
  
    `export OPENAI_API_KEY=<your openai api key>`
   - On Windows, type in the command prompt:
