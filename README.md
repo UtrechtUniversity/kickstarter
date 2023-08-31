@@ -45,8 +45,7 @@ Graphic design tools for award-winning designs              | Professional graph
 
 ### Output
 
-The output is a CSV file which is the input file with additional columns containing the NAICS codes as well as the number of input tokens used and the output tokens produced by ChatGPT. Here is the output corresponding to the example input above:
-<div  style="font-size: 4px;">
+The output is a CSV file which is the input file with additional columns containing the NAICS codes as well as the number of input tokens used and the output tokens produced by ChatGPT. Here is the output corresponding to the example input above, with the NAICS codes being from the year 2017:
 
 | name | blurb | category | subcategory |  naics code | input tokens | output tokens                                                                                                          
 |--|--|--|--|--|--|--
