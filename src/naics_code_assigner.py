@@ -1,14 +1,13 @@
 '''
 Module for NAICSCodeAssigner class
 '''
+
 import os
 import json
 import shutil
 from pathlib import Path
 import pandas as pd
 import openai
-from functions import retry
-
 
 class NAICSCodeAssigner:
 
@@ -46,13 +45,15 @@ class NAICSCodeAssigner:
     # pylint: disable=too-many-instance-attributes
     # pylint: disable=too-many-arguments
 
-    def __init__(self, input_filename, model='gpt-3.5-turbo',
+    def __init__(self, input_filename, separator_input_file,
+                 model='gpt-3.5-turbo',
                  output_dir=None, output_filename=None, prompt_template=None,
                  year=2017, num_digits_naics_code=4,
                  columns_business_description=None,
                  max_retries=10, min_wait_time=5, chunk_size=100):
 
         self.input_filename = input_filename
+        self.separator_input_file = separator_input_file
         self.model = model
         self.num_digits_naics_code = num_digits_naics_code
         self.max_retries = max_retries
@@ -62,7 +63,7 @@ class NAICSCodeAssigner:
         if output_dir is not None:
             self.output_dir = output_dir
         else:
-            self.output_dir = '../data'
+            self.output_dir = './data'
 
         Path(self.output_dir).mkdir(parents=True, exist_ok=True)
 
@@ -100,7 +101,7 @@ class NAICSCodeAssigner:
 
         '''
         Assign NAICS codes to all entries of the input file,
-        and writes the results incrementally, chunk by chunk,
+        and write the results incrementally, chunk by chunk,
         to the output file.
         '''
 
@@ -122,7 +123,8 @@ class NAICSCodeAssigner:
 
         # Read the csv file in chunks
         chunks = pd.read_csv(self.input_filename, \
-                             chunksize = self.chunk_size, sep = '\t')
+                             chunksize = self.chunk_size, \
+                             sep = self.separator_input_file)
 
         # Process one chunk at a time
         for i, chunk in enumerate(chunks, start=1):
@@ -187,17 +189,22 @@ class NAICSCodeAssigner:
 
             response = self.assign_naics_code(row)
 
-            naics_code = response.choices[0].message['content']
-            prompt_tokens = response.usage['prompt_tokens']
-            completion_tokens = response.usage['completion_tokens']
-
+            if response is not None:
+                naics_code = response.choices[0].message['content']
+                prompt_tokens = response.usage['prompt_tokens']
+                completion_tokens = response.usage['completion_tokens']
+            else:
+                naics_code = None
+                prompt_tokens = None
+                completion_tokens = None
+                
             naics_codes.append(naics_code)
             num_prompt_tokens.append(prompt_tokens)
             num_completion_tokens.append(completion_tokens)
 
-        chunk['naics_code'] = naics_codes
-        chunk['input_tokens'] = num_prompt_tokens
-        chunk['output_tokens'] = num_completion_tokens
+        chunk['naics code'] = naics_codes
+        chunk['input tokens'] = num_prompt_tokens
+        chunk['output tokens'] = num_completion_tokens
 
         return chunk
 
@@ -288,10 +295,40 @@ class NAICSCodeAssigner:
             the columns of columns_business_description.
 
         '''
-
+       
         description = '. '.join(row[columns_business_description])
-
+       
         return description
+
+def retry(function, max_retries, min_wait_time, *args):
+    
+    '''
+    Parameters
+    ----------
+    function: Function to run again
+    max_retries: Maximum number of times to retry
+    args: Arguments of the function
+
+    Returns
+    -------
+    Value returned by function, or prints an error message
+    '''
+
+    # Want to catch all kinds of exceptions
+    # pylint: disable=broad-except
+
+    num_attempt = 0
+    while num_attempt < max_retries:
+
+        try:
+            return function(*args)
+        except Exception as error:
+            print(f'Function {function} failed at attempt {num_attempt} \
+            with exception {repr(error)}')
+            time.sleep(random_wait_time(min_wait=min_wait_time))
+            num_attempt = num_attempt + 1
+
+    return None
 
 def main():
 
