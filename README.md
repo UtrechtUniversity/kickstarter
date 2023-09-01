@@ -33,7 +33,7 @@ We started with already-scraped [data about Kickstarter projects](https://webrob
 - **Create configuration file**: Specify user-defined variables in the `config.json` file.
 - **Run program**: Run the program from the terminal:
 
-  `python src/naics_code_assigner.py`
+  `python src/assign_naics_code.py`
 
 ### Input
 The input is a CSV file with information about Kickstarter projects. Here is an example with a few rows and the relevant columns shown:
