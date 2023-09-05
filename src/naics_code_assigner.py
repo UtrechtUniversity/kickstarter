@@ -91,12 +91,6 @@ class NAICSCodeAssigner:
 
         self.progress_log = 'progress.txt'
 
-    def __enter__(self):
-        return self
-
-    def __exit__(self, _exc_type, _exc_val, _exc_tb):
-        pass
-
     def obtain_naics_codes(self):
 
         '''
