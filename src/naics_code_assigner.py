@@ -46,7 +46,7 @@ class NAICSCodeAssigner:
     # pylint: disable=too-many-arguments
 
     def __init__(self, input_filename, separator_input_file,
-                 model='gpt-3.5-turbo',
+                 model='gpt-3.5-turbo-0125',
                  output_dir=None, output_filename=None, prompt_template=None,
                  year=2017, num_digits_naics_code=4,
                  columns_business_description=None,
@@ -76,13 +76,27 @@ class NAICSCodeAssigner:
         if prompt_template is not None:
             self.prompt_template = prompt_template
         else:
-            self.prompt_template = ''' \
-            Assign the closest 4-digit 2017 NAICS code to this business idea. \
-            List only the 4-digit 2017 NAICS code, and no other text. \
-            For example, for the 2017 NAICS category \
-            'Motion Picture and Video Industries', print: \
-            '5121'\
-            '''
+            self.prompt_template = '''
+                You are an industry expert with deep and extensive knowledge 
+                and understanding of the North American Industry Classification System
+                (NAICS). 
+
+                Your job is to find the most appropriate 2017 NAICS code for a business idea,
+                given the business' name, description, business category, 
+                and business subcategory. 
+
+                Find the closest 4-digit 2017 NAICS code
+                for a business with the given characteristics.
+
+                Return the result in valid JSON object format,
+                with the single key "naics_code".
+
+                Return only the JSON object containing the NAICS code, 
+                and no other text, code, or explanation.
+
+                Business characteristics:
+
+                '''
 
         if columns_business_description is not None:
             self.columns_business_description = columns_business_description
@@ -266,9 +280,11 @@ class NAICSCodeAssigner:
             containing the text from the data in this row.
         '''
 
-        description = self.create_business_description(row, self.columns_business_description)
-        prompt = f'''{description}. {self.prompt_template}'''
-
+        description = self.create_business_description_detailed(row, self.columns_business_description)
+        prompt = f'''{self.prompt_template} {description}'''
+        
+        print(prompt)
+        
         return prompt
 
     def create_business_description(self, row, columns_business_description):
@@ -291,5 +307,36 @@ class NAICSCodeAssigner:
         '''
 
         description = '. '.join(row[columns_business_description])
+
+        return description
+
+    def create_business_description_detailed(self, row, columns_business_description):
+
+        '''
+        Parameters
+        ----------
+        row : dataframe
+            Row of input file being processed.
+
+        columns_business_description : list of str
+            List of columns from input file to be used in the prompt.
+
+        Returns
+        -------
+        description : str
+            Description of the business idea
+
+        '''
+        description = ''
+        
+        for item in columns_business_description:
+
+            if item == 'blurb':
+                characteristic = 'Description'
+            else:
+                characteristic = item.capitalize()
+
+            description = description + \
+                          f'{characteristic}: column_business_description[item] \n'        
 
         return description

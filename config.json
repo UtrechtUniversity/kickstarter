@@ -1,5 +1,5 @@
 {
-    "input_filename": "./data/raw/ks_data240823_mod.csv",
+    "input_filename": "./data/raw/to_validate.csv",
     "separator_input_file": ",",
     "output_dir": "./data/processed",
     "columns_business_description": ["name", "blurb", "category", "subcategory"],
