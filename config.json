@@ -3,5 +3,5 @@
     "separator_input_file": ",",
     "output_dir": "./data/processed",
     "columns_business_description": ["name", "blurb", "category", "subcategory"],
-    "chunk_size": 10
+    "chunk_size": 100
 }

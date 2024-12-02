@@ -6,8 +6,14 @@ import os
 import shutil
 from pathlib import Path
 import pandas as pd
-import openai
+from openai import OpenAI
 from utilities import retry
+
+# Retrieve the OpenAI API key from the environment variables
+api_key = os.getenv("OPENAI_API_KEY")
+
+# Initialize the OpenAI client with the retrieved API key
+client = OpenAI(api_key=api_key)
 
 class NAICSCodeAssigner:
 
@@ -46,7 +52,7 @@ class NAICSCodeAssigner:
     # pylint: disable=too-many-arguments
 
     def __init__(self, input_filename, separator_input_file,
-                 model='gpt-3.5-turbo',
+                 model='gpt-3.5-turbo-0125',
                  output_dir=None, output_filename=None, prompt_template=None,
                  year=2017, num_digits_naics_code=4,
                  columns_business_description=None,
@@ -76,13 +82,24 @@ class NAICSCodeAssigner:
         if prompt_template is not None:
             self.prompt_template = prompt_template
         else:
-            self.prompt_template = ''' \
-            Assign the closest 4-digit 2017 NAICS code to this business idea. \
-            List only the 4-digit 2017 NAICS code, and no other text. \
-            For example, for the 2017 NAICS category \
-            'Motion Picture and Video Industries', print: \
-            '5121'\
-            '''
+            self.prompt_template = '''
+                You are an industry expert with deep and extensive knowledge
+                and understanding of the North American Industry Classification System
+                (NAICS).
+
+                Your job is to find the most appropriate 2017 NAICS code for a business idea,
+                given the business' name, description, business category,
+                and business subcategory.
+
+                Find the closest 4-digit 2017 NAICS code
+                for a business with the given characteristics.
+
+                Return only the 4-digit NAICS code,
+                and no other text, code, or explanation.
+
+                Business characteristics:
+
+                '''
 
         if columns_business_description is not None:
             self.columns_business_description = columns_business_description
@@ -184,9 +201,9 @@ class NAICSCodeAssigner:
             response = self.assign_naics_code(row)
 
             if response is not None:
-                naics_code = response.choices[0].message['content']
-                prompt_tokens = response.usage['prompt_tokens']
-                completion_tokens = response.usage['completion_tokens']
+                naics_code = response.choices[0].message.content
+                prompt_tokens = response.usage.prompt_tokens
+                completion_tokens = response.usage.completion_tokens
             else:
                 naics_code = None
                 prompt_tokens = None
@@ -224,7 +241,8 @@ class NAICSCodeAssigner:
 
         return response
 
-    def get_completion(self, prompt, model='gpt-3.5-turbo'):
+    @staticmethod
+    def get_completion(prompt, model='gpt-3.5-turbo-0125'):
 
         '''
         Parameters
@@ -233,7 +251,7 @@ class NAICSCodeAssigner:
             Prompt to be provided to ChatGPT.
 
         model : str
-            GPT model being used. The default is 'gpt-3.5-turbo'.
+            GPT model being used. The default is 'gpt-3.5-turbo-0125'.
 
         Returns
         -------
@@ -243,12 +261,13 @@ class NAICSCodeAssigner:
         '''
 
         messages = [{'role': 'user', 'content': prompt}]
-        response = openai.ChatCompletion.create(
+        response = client.chat.completions.create(
             model=model,
             messages=messages,
             temperature=0,
+            timeout=30,
+            seed = 1000,
             )
-
         return response
 
     def create_prompt(self, row):
@@ -266,12 +285,16 @@ class NAICSCodeAssigner:
             containing the text from the data in this row.
         '''
 
-        description = self.create_business_description(row, self.columns_business_description)
-        prompt = f'''{description}. {self.prompt_template}'''
+        description = self.create_business_description_detailed(
+            row,
+            self.columns_business_description
+        )
+        prompt = f'''{self.prompt_template} {description}'''
 
         return prompt
 
-    def create_business_description(self, row, columns_business_description):
+    @staticmethod
+    def create_business_description(row, columns_business_description):
 
         '''
         Parameters
@@ -291,5 +314,37 @@ class NAICSCodeAssigner:
         '''
 
         description = '. '.join(row[columns_business_description])
+
+        return description
+
+    @staticmethod
+    def create_business_description_detailed(row, columns_business_description):
+
+        '''
+        Parameters
+        ----------
+        row : dataframe
+            Row of input file being processed.
+
+        columns_business_description : list of str
+            List of columns from input file to be used in the prompt.
+
+        Returns
+        -------
+        description : str
+            Description of the business idea
+
+        '''
+        description = ''
+
+        for item in columns_business_description:
+
+            if item == 'blurb':
+                characteristic = 'Description'
+            else:
+                characteristic = item.capitalize()
+
+            description = description + \
+                          f'{characteristic}: {row[item]} \n'
 
         return description
